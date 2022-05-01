@@ -10,110 +10,65 @@ namespace MultiValueDictionary
     {
         public MVDictionary()
         {
-            Dictionary = new Dictionary<string, string>();
-            Key = "";
-            Value = "";
+            Dictionary = new Dictionary<string, List<string>>();
         }
 
-        public string Key { get; set; }
-        public string Value { get; set; }
         public string CommandID { get; set; }
-        public Dictionary<string, string> Dictionary { get; set; }
+        public Dictionary<string, List<string>> Dictionary { get; set; }
 
-        public void AddMember(string key, string valuy)
+        //KEYS (1)
+        public List<string> GetAllKeys()
         {
-            Dictionary.Add(key, valuy);
+            List<string> keyList = new List<string>(Dictionary.Keys);
+            return keyList;
         }
-        public void RemoveMember(string key)
+
+        //MEMBERS (2) validate key
+        public List<string> GetMembersByKey(string key)
+        {
+          List<string> lst = Dictionary[key].ToList<string>();
+            return lst;
+        }
+
+        //ADD (3) validate key
+        public void Add(string key, List<string> value)
+        {
+            Dictionary.Add(key, value);
+        }
+
+        //REMOVE (4) validate key
+        public void RemoveMember(string key, string member)
+        {
+                List<string> lst = Dictionary[key];
+                lst.RemoveAll((x) => x.Trim() == (member).Trim());
+            if (lst.Count == 0)
+                Dictionary.Remove(key);
+            else
+                Dictionary[key] = lst;
+        }
+
+        //REMOVEALL (5) validate key
+        public void RemoveAll(string key)
         {
             Dictionary.Remove(key);
         }
-        public bool ValidateKey(string key)
+
+        //CREAR (6)
+        public void Clear()
         {
-            if (Dictionary.Count == 0) return false;//No errors if cout 0
-            return Dictionary.ContainsKey(key);
-        }
-
-        public bool ValidateValue(string value)
-        {
-            if (Dictionary.Count == 0) return false; //No errors if cout 0
-            return Dictionary.Any(b => (b.Value != null && b.Value == value));
-        }
-
-        public string GetAllKeys()
-        {
-            string allKeys = "";
-            foreach (var item in Dictionary)
-            {
-                if (allKeys == "")
-                allKeys = item.Key;
-                else allKeys = allKeys + ", " + item.Key;
-
-            }
-            return allKeys;
-        }
-        public string GetMembersByKey(string key)
-        {
-            string members = "";
-            if (!KeyExists(key))
-            {
-                members = "ERROR: key not exists!";
-            }
-            else {
-                foreach (var item in Dictionary)
-                {
-                    if (item.Key == key)
-                    {
-                        if (members == "")
-                            members = item.Key + ":" + item.Value + "\r\n";
-                        else members = members + item.Key + ":" + item.Value + "\r\n";
-                    }
-                }
-            }
-           
-            return members;
-        }
-
-        public string GetMembersByValue(string value)
-        {
-
-            string members = "";
-            foreach (var item in Dictionary)
-                {
-                    if (item.Value == value)
-                    {
-                        if (members == "")
-                            members = item.Key + ":" + item.Value + "\r\n";
-                        else members = members + item.Key + ":" + item.Value + "\r\n";
-                    }
-                }
-
-            return members;
-        }
-
-        public string GetAllMembers()
-        {
-            string allMembers = "";
-            
-
-                foreach (var item in Dictionary)
-                {
-                    if (allMembers == "")
-                        allMembers = item.Key + ":" + item.Value + "\r\n";
-                    else allMembers = allMembers + item.Key + ":" + item.Value + "\r\n";
-
-                }
-           
-            return allMembers;
+                Dictionary.Clear();
         }
 
         public bool KeyExists(string key)
         {
-              return  Dictionary.ContainsKey(key);
+            if (Dictionary == null || Dictionary.Count == 0) return false;
+            return Dictionary.ContainsKey(key);
         }
-        public void Clear()
+        public bool MemberExists(string key, string member)
         {
-                Dictionary.Clear();
+            if (Dictionary == null || Dictionary.Count == 0) return false;
+            List<string> lst = Dictionary[key].ToList<string>();
+            return lst.Contains(member);
         }
     }
 
@@ -122,94 +77,127 @@ namespace MultiValueDictionary
             static void Main(string[] args)
             {
             bool bError = false;
-            //bool addKey = true;
-            //bool addValue = true;
-            //bool askKeyQestion = true;
-            //bool askValueQestion = true;
+            string sKey;
+            List<string> lstValue = new List<string>();
 
             MVDictionary md = new MVDictionary();
             while (true)
             {
-                if (!bError)
+               if (!bError)
                 {
                     Console.Write("\n\rSelect Command Key: \r\n   KEYS (1), MEMBERS (2), ADD (3), REMOVE (4),");
-                    Console.Write("REMOVEALL (6), CLEAR (7), \r\n   KEYEXISTS (9), MEMBEREXISTS (10), ALLMEMBERS (11)? ");
+                    Console.Write("REMOVEALL (6), CLEAR (7)? ");
                     md.CommandID = Console.ReadLine().ToString();
                 }
 
                 switch (md.CommandID)
                 {
-                    case "1":
-                        Console.Write("All KEYS: " + md.GetAllKeys());
+                    
+                    case "1": //KEYS
+                        Console.Write("KEYS: ");
+                        
+                        if (md.Dictionary.Count == 0)
+                        {
+                            Console.WriteLine("Error: Keys are not exist!");
+                        }
+                        else
+                        {
+                            List<string> kLst = md.GetAllKeys();
+                            foreach (var item in kLst)
+                            {
+                                Console.Write("\n\r  > " + item);
+                            }
+                        }
                         break;
-                    case "2":
-                        Console.Write("MEMBERS by Key: ");
-                        Console.Write(md.GetMembersByKey(Console.ReadLine().ToString()));
+                    case "2": //MEMBERS
+                        Console.Write("MEMBERS set Key: ");
+                        sKey = Console.ReadLine().ToString();
+                        if (!md.KeyExists(sKey))
+                        {
+                            Console.WriteLine("Error: Key '{0}' not exists!", sKey);
+                        }
+                        else
+                        {
+                            List<string> mLst = md.GetMembersByKey(sKey);
+
+                            foreach (var item in mLst)
+                            {
+                                Console.Write("\n\r  > " + item);
+                            }
+                        }
                         break;
-                    case "4":
-                        Console.Write("REMOVE by Key :");
-                        md.Key = Console.ReadLine().ToString();
-                        md.RemoveMember(md.Key);
+
+                    case "4": //REMOVE
+                        Console.Write("REMOVE set Key :");
+                        sKey = Console.ReadLine().ToString();
+                        if (!md.KeyExists(sKey))
+                        {
+                            Console.WriteLine("Error: Key '{0}' not exists!", sKey);
+                        }
+                        else
+                        {
+                            Console.Write("REMOVE set Mamber :");
+                           string member = Console.ReadLine().ToString();
+                            if (!md.MemberExists(sKey, member))
+                            {
+                                Console.WriteLine("Error: Member '{0}' not exists for key '{1}'!", member, sKey);
+                            }
+                            else
+                            {
+                                md.RemoveMember(sKey, member);
+                            }
+                        }
                         break;
+
+                    case "6": //REMOVEALL
+                        Console.Write("REMOVE set Key :");
+                        sKey = Console.ReadLine().ToString();
+                        if (!md.KeyExists(sKey))
+                        {
+                            bError = true;
+                            Console.WriteLine("Error: Key '{0}' not exists!", sKey);
+                        }
+                        else
+                        {
+                            md.RemoveAll(sKey);
+                        }
+                       
+                        break;
+
+
                     case "7":
                         Console.Write("CLEAR Y/N? ");
                         if (Console.ReadLine().ToString() == "Y")
                             md.Clear();
                         break;
-                    case "9":
-                            Console.Write("KEYEXISTS set Key: ");
-                            Console.Write(md.GetMembersByKey(Console.ReadLine().ToString()));
-                        break;
-                    case "10":
-                        Console.Write("MEMBEREXISTS set Key: ");
-                        Console.Write(md.GetMembersByValue(Console.ReadLine().ToString()));
-                        break;
-                    case "11":
-                        Console.Write("All MEMBERS: \r\n" + md.GetAllMembers());
-                        break;
-                    case "3":
-                        if (md.Key == "")
-                        {
+             
+                    case "3": //ADD 
+                        
                             Console.Write("Key to ADD:");
-                            md.Key = Console.ReadLine().ToString();
+                            sKey = Console.ReadLine().ToString();
 
-                            if (md.ValidateKey(md.Key))
+                            if (md.KeyExists(sKey))
                             {
                                 bError = true;
-                                Console.WriteLine("Error: Key '{0}' is not unique!", md.Key);
-                                md.Key = "";
-
+                                Console.WriteLine("Error: Key '{0}' already exists!", sKey);
                             }
+
+                        if (!bError)
+                        {
+                            Console.Write("Values comma separated List:");
+                            lstValue = Console.ReadLine().ToString().Split(',').ToList<string>();
                         }
 
-                        if (md.Key != "" && md.Value == "")
+                        if (!bError)
                         {
-                            Console.Write("Value:");
-                            md.Value = Console.ReadLine().ToString();
-
-
-                            if (md.ValidateValue(md.Value))
-                            {
-                                bError = true;
-                                Console.WriteLine("Error: Value '{0}' is not unique!", md.Value);
-                                md.Value = "";
-                            }
-                            
-                        }
-
-                        if (md.Key != "" && md.Value != "")
-                        {
-                            md.AddMember(md.Key, md.Value);
+                            md.Add(sKey, lstValue);
                             int c = md.Dictionary.Count;
-                            Console.WriteLine("You entered '{0}' : '{1}'", md.Key, md.Value);
-                            md.Key = "";
-                            md.Value = "";
                             bError = false;
                         }
                         break;
                 }
-            }
+             }
           }
-        }
+       }
     }
 

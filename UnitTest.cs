@@ -8,57 +8,77 @@ namespace MultiValueDictionary_UnitTest
     [TestClass]
     public class UnitTest
     {
-        Dictionary<string, string> dict = new Dictionary<string, string>
-        {
-            { "a", "aaa" },
-            { "b", "bbb" },
-            { "c", "ccc" }
-        };
+        List<string> bigCities1 = new List<string>()
+                    {
+                        "London",
+                        "Mumbai",
+                        "Chicago"
+                    };
+        List<string> bigCities2 = new List<string>()
+                    {
+                        "Lincoln",
+                        "Omaha",
+                        "New York"
+                    };
+        MVDictionary md = new MVDictionary();
 
-        MVDictionary mv = new MVDictionary();
-
-        [TestMethod]
-        public void TestMethod_KEYS()
-        {
-           string expected = "a, b, c";
-           mv.Dictionary = dict;
-           string actual = mv.GetAllKeys();
-           Assert.AreEqual(expected, actual, "KEYS not matchng");
-        }
-
-        [TestMethod]
-        public void TestMethod_MEMBERS()
-        {
-            mv.Dictionary = dict;
-            string expected = "a:aaa";
-            string actual = mv.GetAllMembers().Substring(0,5);
-            Assert.AreEqual(expected, actual, "MEMBERS not matchng");
-        }
-
-        [TestMethod]
-        public void TestMethod_REMOVE()
-        {
-            mv.Dictionary = dict;
-            string expected = "a:aaa";
-            mv.RemoveMember("a");
-            string actual = mv.GetAllMembers().Substring(0, 5);
-            Assert.AreNotEqual(expected, actual, "Mamber was not Removed");
-        }
         [TestMethod]
         public void TestMethod_ADD()
         {
-            mv.Dictionary = dict;
-            mv.AddMember("d", "ddd");
-            string actual = mv.GetAllMembers();
-            Assert.IsTrue(actual.Contains("ddd"), "Member was not Added");
+            PopulateCollation();
+            Assert.IsTrue(md.Dictionary.Count == 2, "Member was not Added");
         }
+
         [TestMethod]
-        public void TestMethod_REMOVEALL()
+        public void TestMethod_GetAllKeys()
         {
-            mv.Dictionary = dict;
-            mv.Clear();
-            string actual = mv.GetAllMembers();
-            Assert.IsFalse(actual.Contains("aaa"), "Collection was not cleard");
+            PopulateCollation();
+
+            List<string> actual = md.GetAllKeys();
+            Assert.IsTrue(actual.Contains("a") && actual.Contains("b"), "GetAllKeys method is not working correct");
+        }
+
+        [TestMethod]
+        public void TestMethod_GetMembersByKey()
+        {
+            PopulateCollation();
+
+            List<string> actual = md.GetMembersByKey("a");
+            Assert.IsTrue(actual.Contains("London") && actual.Contains("Mumbai") && actual.Contains("Chicago"), "GetMembersByKey method is not working correct");
+        }
+
+        [TestMethod]
+        public void TestMethod_RemoveMember()
+        {
+            PopulateCollation();
+            md.RemoveMember("a", "London");
+            List<string> actual = md.GetMembersByKey("a");
+            Assert.IsFalse(actual.Contains("London"), "RemoveMember method is not working correct");
+        }
+
+        [TestMethod]
+        public void TestMethod_RemoveAll()
+        {
+            PopulateCollation();
+            md.RemoveAll("a");
+            List<string> actual = md.GetAllKeys();
+
+            Assert.IsFalse(actual.Contains("a"), "RemoveAll method is not working correct");
+        }
+
+        [TestMethod]
+        public void TestMethod_Clear()
+        {
+            md.Add("a", bigCities1);
+            md.Add("b", bigCities2);
+            md.Clear();
+            Assert.IsTrue(md.Dictionary.Count == 0, "Clear method is not working correct");
+        }
+
+        public void PopulateCollation()
+        {
+            md.Add("a", bigCities1);
+            md.Add("b", bigCities2);
         }
     }
 }
